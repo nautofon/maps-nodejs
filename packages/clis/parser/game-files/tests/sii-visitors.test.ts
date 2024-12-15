@@ -40,4 +40,80 @@ effect : "ui.sdf.rfx" {
       },
     });
   });
+
+  it('parses mileage target ks_newton', () => {
+    const text = `
+SiiNunit
+{
+mileage_target : mileage.ks_newton {
+ editor_name: "KS Newton"
+ default_name: Newton
+ variants: 0
+ names: 0
+ image_atlas_paths: 0
+ image_atlas_indices: 0
+ distance_offset: -1
+ node_uid: nil
+ position: (&c5bd8d1e, &4176a448, &45944b06)
+ search_radius: 30
+}
+}
+    `;
+
+    const res = parseSii(text);
+    expect(jsonConverter.convert(res.cst)).toEqual({
+      mileageTarget: {
+        'mileage.ks_newton': {
+          editorName: 'KS Newton',
+          defaultName: 'Newton',
+          distanceOffset: -1,
+          imageAtlasIndices: 0,
+          imageAtlasPaths: 0,
+          names: 0,
+          nodeUid: 'nil',
+          position: [-6065.6396484375, 15.415107727050781, 4745.3779296875],
+          searchRadius: 30,
+          variants: 0,
+        },
+      },
+    });
+  });
+
+  it.todo('parses mileage target ok_seiling', () => {
+    const text = `
+SiiNunit
+{
+mileage_target : mileage.ok_seiling {
+ editor_name: "OK Seiling"
+ default_name: Seiling
+ variants: 0
+ names: 0
+ image_atlas_paths: 0
+ image_atlas_indices: 0
+ distance_offset: &40200000
+ node_uid: 5427112652697371218
+ position: (&7f7fffff, &7f7fffff, &7f7fffff)
+ search_radius: -1
+}
+}
+    `;
+
+    const res = parseSii(text);
+    expect(jsonConverter.convert(res.cst)).toEqual({
+      mileageTarget: {
+        'mileage.ok_seiling': {
+          editorName: 'OK Seiling',
+          defaultName: 'Seiling',
+          distanceOffset: 2.5,
+          imageAtlasIndices: 0,
+          imageAtlasPaths: 0,
+          names: 0,
+          nodeUid: 5427112652697371218n,
+          position: [null, null, null],
+          searchRadius: -1,
+          variants: 0,
+        },
+      },
+    });
+  });
 });

@@ -74,6 +74,8 @@ class JsonConverterVisitor extends getSiiVisitorClass<
   ): void {
     if (children.String) {
       json.value = quotedStringToString(children.String[0].image);
+    } else if (children.BinaryFloat) {
+      json.value = stringToFloat(children.BinaryFloat[0].image);
     } else if (children.NumberLiteral) {
       json.value = stringToNumber(children.NumberLiteral[0].image);
     } else if (children.HexLiteral) {
@@ -82,9 +84,18 @@ class JsonConverterVisitor extends getSiiVisitorClass<
     } else if (children.Property) {
       json.value = children.Property[0].image;
     } else if (children.numberTuple) {
-      json.value = children.numberTuple[0].children.NumberLiteral.map(l =>
-        stringToNumber(l.image),
-      );
+      const arr: NumberTupleChild[] = [];
+      if (children.numberTuple[0].children.NumberLiteral) {
+        children.numberTuple[0].children.NumberLiteral.forEach(l =>
+          arr.push({ value: stringToNumber(l.image), offset: l.startOffset }),
+        );
+      }
+      if (children.numberTuple[0].children.BinaryFloat) {
+        children.numberTuple[0].children.BinaryFloat.forEach(l =>
+          arr.push({ value: stringToFloat(l.image), offset: l.startOffset }),
+        );
+      }
+      json.value = arr.sort((a, b) => a.offset - b.offset).map(x => x.value);
     } else if (children.numberAuxTuple) {
       json.value = children.numberAuxTuple[0].children.NumberLiteral.map(l =>
         stringToNumber(l.image),
@@ -99,6 +110,11 @@ class JsonConverterVisitor extends getSiiVisitorClass<
   override includeDirective(children: IncludeDirectiveCstChildren) {
     logger.warn('ignoring @include directive', children.String[0].image);
   }
+}
+
+interface NumberTupleChild {
+  value: number | null;
+  offset: number;
 }
 
 class IncludeDirectiveCollector extends getSiiVisitorClass<string[]>() {
@@ -143,4 +159,18 @@ function stringToNumber(str: string) {
     throw new Error('could not parse number: ' + str);
   }
   return num;
+}
+
+function stringToFloat(str: string) {
+  const binaryInt = parseInt(str.substring(1), 16);
+  if (isNaN(binaryInt)) {
+    throw new Error('could not parse binary float: ' + str);
+  }
+  if (binaryInt == 0x7f7fffff) {
+    // binary32 float max finite value, used as a "no data" marker
+    return null;
+  }
+  const data = new DataView(new ArrayBuffer(4));
+  data.setUint32(0, binaryInt);
+  return data.getFloat32(0);
 }
