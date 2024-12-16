@@ -925,6 +925,26 @@ function postProcess(
     'roads possibly split by terrains, buildings, or curves',
   );
 
+  // Augment mileage targets from defs with position info from sectors.
+  const mileageTargets = defData.mileageTargets;
+  for (const [token, target] of mileageTargets) {
+    if (target.position || !target.nodeUid) {
+      continue;
+    }
+    const nodeUid = target.nodeUid as unknown as bigint;
+    const node = nodesByUid.get(nodeUid);
+    if (node) {
+      mileageTargets.set(token, {
+        ...target,
+        position: [node.x, node.z, node.y],
+      });
+      // referencedNodeUids.add(nodeUid);
+      // logger.success('node', nodeUid, 'found for mileage target', token);
+    } else {
+      logger.warn('node', nodeUid, 'not found for mileage target', token);
+    }
+  }
+
   logger.info(elevationNodeUids.size, 'elevation nodes');
   const referencedNodes: Node[] = [];
   for (const uid of referencedNodeUids) {
@@ -962,6 +982,7 @@ function postProcess(
       modelDescriptions: valuesWithTokens(defData.models),
       achievements: valuesWithTokens(defData.achievements),
       routes: valuesWithTokens(defData.routes),
+      mileageTargets: valuesWithTokens(mileageTargets),
     },
     icons,
   };
@@ -980,6 +1001,7 @@ function toDefData(
     modelDescriptions: valuesWithTokens(defData.models),
     achievements: valuesWithTokens(defData.achievements),
     routes: valuesWithTokens(defData.routes),
+    mileageTargets: valuesWithTokens(defData.mileageTargets),
   };
 }
 

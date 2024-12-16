@@ -9,6 +9,7 @@ import type {
   Ferry,
   FerryConnection,
   LaneSpeedClass,
+  MileageTarget,
   ModelDescription,
   PrefabDescription,
   RoadLook,
@@ -30,6 +31,7 @@ import type {
   CountrySii,
   Ets2AchievementsSii,
   FerrySii,
+  MileageTargetsSii,
   ModelSii,
   PrefabSii,
   RoadLookSii,
@@ -46,6 +48,7 @@ import {
   Ets2AchievementsSiiSchema,
   FerryConnectionSiiSchema,
   FerrySiiSchema,
+  MileageTargetsSiiSchema,
   ModelSiiSchema,
   PrefabSiiSchema,
   RoadLookSiiSchema,
@@ -204,6 +207,15 @@ export function parseDefFiles(entries: Entries, application: 'ats' | 'eut2') {
   logger.info('parsed', models.size, 'building models');
   logger.info('parsed', vegetation.size, 'vegetation models');
 
+  const mileageTargets: Map<string, MileageTarget> = processMileageTargetJson(
+    convertSiiToJson(
+      'def/sign/mileage_targets.sii',
+      entries,
+      MileageTargetsSiiSchema,
+    ),
+  );
+  logger.info('parsed', mileageTargets.size, 'mileage targets');
+
   const defPhotoAlbum = Preconditions.checkExists(
     entries.directories.get('def/photo_album'),
   );
@@ -270,6 +282,7 @@ export function parseDefFiles(entries: Entries, application: 'ats' | 'eut2') {
     roadLooks,
     models,
     vegetation,
+    mileageTargets,
     viewpoints,
   };
 }
@@ -905,4 +918,31 @@ function processRouteJson(obj: RouteSii): Map<string, Route> {
     routes.set(routeKey, route);
   }
   return routes;
+}
+
+function processMileageTargetJson(
+  obj: MileageTargetsSii,
+): Map<string, MileageTarget> {
+  const mileageTargets = new Map<string, MileageTarget>();
+  for (const [key, rawTarget] of Object.entries(obj.mileageTarget)) {
+    const token = assertExists(key.split('.')[1]);
+    let target: MileageTarget = {
+      token: token,
+      editorName: rawTarget.editorName,
+      defaultName: rawTarget.defaultName,
+      distanceOffset: rawTarget.distanceOffset,
+      searchRadius: rawTarget.searchRadius,
+    };
+    if (rawTarget.position[0] != null) {
+      assert(rawTarget.position[1] != null && rawTarget.position[2] != null);
+      target = { ...target, position: rawTarget.position };
+    } else if (rawTarget.nodeUid != 'nil') {
+      target = { ...target, nodeUid: rawTarget.nodeUid };
+    } else {
+      // logger.warn('skipping mileage target (no position, nor uid)', token);
+      continue;
+    }
+    mileageTargets.set(token, target);
+  }
+  return mileageTargets;
 }
