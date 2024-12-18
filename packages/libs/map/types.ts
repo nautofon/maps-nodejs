@@ -605,6 +605,11 @@ export type AchievementFeature = GeoJSON.Feature<
   { name: string; dlcGuard: number }
 >;
 
+export type MileageTargetFeature = GeoJSON.Feature<
+  GeoJSON.Point,
+  MileageTargetProperties
+>;
+
 export type AtsMapGeoJsonFeature =
   | MapAreaFeature
   | PrefabFeature
@@ -688,6 +693,15 @@ export interface PoiProperties {
   poiType: string; // Overlay, Viewpoint, Company, etc.
   poiName?: string; // POI label, if available
   dlcGuard?: number; // For dlc-guarded POIs, like road icons
+}
+
+export interface MileageTargetProperties {
+  token: string;
+  editorName: string;
+  defaultName: string;
+  nameVariants?: string;
+  distanceOffset: number;
+  searchRadius?: number;
 }
 
 export type ScopedCityFeature = GeoJSON.Feature<
