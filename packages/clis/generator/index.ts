@@ -10,6 +10,7 @@ import * as ets2Villages from './commands/ets2-villages';
 import * as footprints from './commands/footprints';
 import * as graph from './commands/graph';
 import * as map from './commands/map';
+import * as mileageTargets from './commands/mileage-targets';
 import * as spritesheet from './commands/spritesheet';
 
 async function main() {
@@ -20,6 +21,7 @@ async function main() {
     .command(footprints)
     .command(contours)
     .command(achievements)
+    .command(mileageTargets)
     .command(spritesheet)
     .command(graph)
     .demandCommand()
