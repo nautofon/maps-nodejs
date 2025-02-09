@@ -72,6 +72,10 @@ npx generator footprints -m usa -m europe -i dirWithParserOutput -o dirToWriteFi
 # generate spritesheet files
 npx generator spritesheet -i dirWithParserOutput -o dirToWriteFilesTo
 
+# generate extra map labels geojson file
+npx generator extra-labels -m usa -i dirWithParserOutput -o dirToWriteFilesTo \
+  -t pathToLabelMetadataJSON
+
 # generate villages geojson file
 npx generator ets2-villages -o dirToWriteFileTo
 
