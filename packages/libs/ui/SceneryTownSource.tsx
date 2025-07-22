@@ -66,6 +66,7 @@ export const SceneryTownSource = (props: SceneryTownSourceProps) => {
     game === 'ats'
       ? [
           'all',
+          // specify `true` as a fallback so we don't skip labels with undefined `show`
           ['boolean', ['get', 'show'], true],
           [
             'in',
