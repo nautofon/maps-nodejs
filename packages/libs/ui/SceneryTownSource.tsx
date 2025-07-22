@@ -4,7 +4,7 @@ import { baseTextLayout, textVariableAnchor } from './GameMapStyle';
 import type { Mode } from './colors';
 import { modeColors } from './colors';
 
-export const atsSceneryTownsUrl = `https://raw.githubusercontent.com/nautofon/ats-towns/california/all-towns.geojson`;
+export const atsSceneryTownsUrl = `/extra-labels.geojson`;
 export const ets2SceneryTownsUrl = `/ets2-villages.geojson`;
 
 export const enum StateCode {
@@ -12,8 +12,10 @@ export const enum StateCode {
   AZ = 'AZ',
   CA = 'CA',
   CO = 'CO',
+  IA = 'IA',
   ID = 'ID',
   KS = 'KS',
+  MO = 'MO',
   MT = 'MT',
   NE = 'NE',
   NM = 'NM',
@@ -30,8 +32,10 @@ const states: Record<StateCode, void> = {
   [StateCode.AZ]: undefined,
   [StateCode.CA]: undefined,
   [StateCode.CO]: undefined,
+  [StateCode.IA]: undefined,
   [StateCode.ID]: undefined,
   [StateCode.KS]: undefined,
+  [StateCode.MO]: undefined,
   [StateCode.MT]: undefined,
   [StateCode.NE]: undefined,
   [StateCode.NM]: undefined,
@@ -65,9 +69,14 @@ export const SceneryTownSource = (props: SceneryTownSourceProps) => {
   const filter: ExpressionSpecification =
     game === 'ats'
       ? [
-          'in',
-          ['get', 'state'],
-          ['literal', [...(props.enabledStates ?? allStates)]],
+          'all',
+          // specify `true` as a fallback so we don't skip labels with undefined `show`
+          ['boolean', ['get', 'show'], true],
+          [
+            'in',
+            ['slice', ['get', 'country'], -2],
+            ['literal', [...(props.enabledStates ?? allStates)]],
+          ],
         ]
       : ['boolean', true];
   const colors = modeColors[mode];
@@ -80,7 +89,7 @@ export const SceneryTownSource = (props: SceneryTownSourceProps) => {
         filter={filter}
         layout={{
           ...baseTextLayout,
-          'text-field': '{name}',
+          'text-field': '{text}',
           'text-allow-overlap': !enableAutoHide,
           'text-variable-anchor': textVariableAnchor,
           'text-size': 10.5,
